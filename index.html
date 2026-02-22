@@ -178,19 +178,16 @@ thead th.sorted { color: var(--teal); }
 .sort-ic { opacity: .35; font-size: 9px; margin-left: 3px; }
 thead th.sorted .sort-ic { opacity: 1; }
 
-.c-check { width: 44px; text-align: center !important; cursor: default !important; }
 .c-name  { min-width: 240px; }
 .c-nr    { width: 140px; }
 .c-loc   { width: 210px; }
 .c-mm    { width: 110px; text-align: center; }
 .c-qty   { width: 88px; text-align: center; }
 .c-notes { width: 155px; }
-.c-act   { width: 52px; text-align: center !important; cursor: default !important; }
 
 tbody tr { border-bottom: 1px solid var(--border-light); transition: background 0.1s; }
 tbody tr:nth-child(even) { background: var(--row-stripe); }
 tbody tr:hover { background: var(--teal-glow) !important; }
-tbody tr.ordered { opacity: .48; }
 td { padding: 8px 12px; vertical-align: middle; }
 
 /* ===== ROOM HEADER — clickable collapse ===== */
@@ -226,15 +223,6 @@ tr.loc-header:hover td { background: var(--teal-glow); color: var(--teal); }
 .loc-collapse { float: right; font-size: 10px; transition: transform 0.2s; display: inline-block; }
 .loc-collapse.closed { transform: rotate(-90deg); }
 
-/* ===== CHECKBOX ===== */
-.chk-wrap { display: flex; align-items: center; justify-content: center; }
-.chk { width: 17px; height: 17px; border-radius: 5px; border: 2px solid var(--border); background: transparent; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: all 0.14s; flex-shrink: 0; }
-.chk:hover { border-color: var(--teal); background: var(--teal-glow); }
-.chk.on { border-color: var(--teal); background: var(--teal); }
-.chk.on svg { color: white; }
-.chk svg { width: 10px; height: 10px; }
-.chk.locked { opacity: .4; cursor: not-allowed; }
-
 /* ===== EDITABLE FIELDS ===== */
 .inline-input { width: 100%; padding: 3px 6px; border-radius: 5px; border: 1px solid transparent; background: transparent; color: var(--text-primary); font-family: inherit; font-size: inherit; outline: none; transition: all 0.15s; }
 .inline-input:focus { border-color: var(--teal); background: var(--bg-secondary); box-shadow: 0 0 0 2px var(--teal-glow); }
@@ -256,9 +244,6 @@ tr.loc-header:hover td { background: var(--teal-glow); color: var(--teal); }
 .notes-inp:focus { border-color: var(--border); background: var(--bg-tertiary); color: var(--text-primary); }
 .notes-inp::placeholder { color: var(--text-muted); }
 .notes-inp:disabled { opacity: .4; }
-
-.warn-ico { color: var(--amber); font-size: 12px; margin-right: 4px; }
-.status-ok { color: var(--green); font-size: 15px; display: flex; align-items: center; justify-content: center; }
 
 /* ===== EMPTY STATE ===== */
 .empty { text-align: center; padding: 60px 20px; color: var(--text-muted); }
@@ -309,7 +294,7 @@ mark { background: rgba(42,157,143,.18); color: var(--teal); border-radius: 2px;
 
 /* ===== PRINT ===== */
 @media print {
-  #header, #toolbar, #sb, #tc, .c-act, .qty-inp, .notes-inp, .chk-wrap { display: none !important; }
+  #header, #toolbar, #sb, #tc, .qty-inp, .notes-inp, .chk-wrap { display: none !important; }
   #main { margin-top: 0 !important; padding-bottom: 0 !important; }
   body { background: white !important; color: black !important; font-size: 9px !important; }
   tr.room-header td, tr.loc-header td { background: #f0f0f0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -383,24 +368,11 @@ const IC = {
   Print:    () => <svg fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>,
 };
 
-/* ===== CHECKBOX ===== */
-const Checkbox = memo(({ checked, onChange, locked }) => (
-  <div className="chk-wrap">
-    <div className={`chk ${checked ? "on" : ""} ${locked ? "locked" : ""}`}
-      onClick={locked ? undefined : onChange}>
-      {checked && <IC.Check />}
-    </div>
-  </div>
-));
-
 /* ===== TABLE ROW ===== */
-const TableRow = memo(({ item, locked, onToggle, onQty, onNotes, onName, onNr, quickFill }) => {
+const TableRow = memo(({ item, locked, onQty, onNotes, onName, onNr, quickFill }) => {
   const isWarn = /sonder|!!!|email|btm|rezept|nur als|muss nicht|konzentrat|nur mit|immer neu/i.test(item.name + item.notes + item.min_max);
   return (
-    <tr className={item.ordered ? "ordered" : ""}>
-      <td className="c-check">
-        <Checkbox checked={item.ordered} onChange={() => onToggle(item.id)} locked={locked} />
-      </td>
+    <tr>
       <td className="c-name">
         <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
           {isWarn && <span className="warn-ico" title={item.notes || item.min_max}>⚠</span>}
@@ -448,18 +420,13 @@ const TableRow = memo(({ item, locked, onToggle, onQty, onNotes, onName, onNr, q
           disabled={locked} onChange={e => onNotes(item.id, e.target.value)}
           style={isWarn && item.notes ? { color: "var(--amber)" } : undefined} />
       </td>
-      <td className="c-act">
-        {item.ordered && <div className="status-ok" title="Als bestellt markiert">✓</div>}
-        {!item.ordered && item.order_qty && item.order_qty !== "0" &&
-          <div style={{ color: "var(--blue)", fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center" }} title="Menge eingetragen">●</div>}
-      </td>
     </tr>
   );
 });
 
 /* ===== COPY MODAL ===== */
 const CopyModal = memo(({ items, onClose }) => {
-  const toOrder = items.filter(i => (i.order_qty && i.order_qty !== "0") || i.ordered);
+  const toOrder = items.filter(i => i.order_qty && i.order_qty !== "0");
   const [copied, setCopied] = useState(false);
 
   // Build clean text
@@ -526,11 +493,10 @@ const CopyModal = memo(({ items, onClose }) => {
 /* ===== EXPORT MODAL ===== */
 const ExportModal = memo(({ items, onClose }) => {
   const withQty = items.filter(i => i.order_qty && i.order_qty !== "0");
-  const ordered = items.filter(i => i.ordered);
   function doCSV() {
-    const hdr = ["Raum","Lagerort","Artikelname","Artikelnummer","Min/Max","Bestellmenge","Notizen","Bestellt"];
-    const rows = items.filter(i => i.order_qty || i.ordered)
-      .map(i => [i.room, i.location, i.name, i.article_nr, i.min_max, i.order_qty, i.notes, i.ordered?"Ja":"Nein"]
+    const hdr = ["Raum","Lagerort","Artikelname","Artikelnummer","Min/Max","Bestellmenge","Notizen"];
+    const rows = items.filter(i => i.order_qty)
+      .map(i => [i.room, i.location, i.name, i.article_nr, i.min_max, i.order_qty, i.notes]
         .map(v => `"${String(v||"").replace(/"/g,'""')}"`).join(","));
     const csv = "\uFEFF" + [hdr.join(","), ...rows].join("\n");
     const a = document.createElement("a");
@@ -542,7 +508,7 @@ const ExportModal = memo(({ items, onClose }) => {
     <div className="ov" onClick={onClose}>
       <div className="mdl" onClick={e => e.stopPropagation()}>
         <h2>📤 Export</h2>
-        <p><strong style={{color:"var(--amber)"}}>{withQty.length}</strong> Artikel mit Menge &nbsp;·&nbsp; <strong style={{color:"var(--green)"}}>{ordered.length}</strong> als bestellt markiert</p>
+        <p><strong style={{color:"var(--amber)"}}>{withQty.length}</strong> Artikel mit Bestellmenge werden exportiert.</p>
         <div className="mdl-btns">
           <button className="mdl-btn prim" onClick={doCSV}>📊 CSV</button>
           <button className="mdl-btn" onClick={() => { window.print(); onClose(); }}>🖨️ Drucken</button>
@@ -570,7 +536,6 @@ function App() {
   const [query, setQuery]         = useState("");
   const [roomFilter, setRoomFilter] = useState("");
   const [locFilter, setLocFilter]   = useState("");
-  const [showOrdered, setShowOrdered]   = useState(false);
   const [showWithQty, setShowWithQty]   = useState(false);
   const [sortCol, setSortCol]   = useLS("bl-sort", "room");
   const [sortDir, setSortDir]   = useLS("bl-sortdir", "asc");
@@ -595,7 +560,6 @@ function App() {
   }, [roomFilter]);
 
   /* Item handlers */
-  const onToggle = useCallback(id => setItems(p => p.map(i => i.id === id ? {...i, ordered: !i.ordered} : i)), [setItems]);
   const onQty    = useCallback((id, v) => setItems(p => p.map(i => i.id === id ? {...i, order_qty: String(v)} : i)), [setItems]);
   const onNotes  = useCallback((id, v) => setItems(p => p.map(i => i.id === id ? {...i, notes: v} : i)), [setItems]);
   const onName   = useCallback((id, v) => setItems(p => p.map(i => i.id === id ? {...i, name: v} : i)), [setItems]);
@@ -628,7 +592,7 @@ function App() {
   /* Reset */
   const handleReset = useCallback(() => {
     if (window.confirm("Bestellmengen und Markierungen zurücksetzen? (Namen/Nummern bleiben erhalten)")) {
-      setItems(p => p.map(i => ({...i, order_qty: "", ordered: false})));
+      setItems(p => p.map(i => ({...i, order_qty: ""})));
       toast("✓ Bestellmengen zurückgesetzt", "ok");
     }
   }, [setItems, toast]);
@@ -659,22 +623,20 @@ function App() {
     }
     if (roomFilter) arr = arr.filter(i => i.room === roomFilter);
     if (locFilter)  arr = arr.filter(i => i.location === locFilter);
-    if (showOrdered) arr = arr.filter(i => i.ordered);
     if (showWithQty) arr = arr.filter(i => i.order_qty && i.order_qty !== "0");
     return [...arr].sort((a, b) => {
       const va = String(a[sortCol] || ""), vb = String(b[sortCol] || "");
       const c = va.localeCompare(vb, "de");
       return sortDir === "asc" ? c : -c;
     });
-  }, [items, query, roomFilter, locFilter, showOrdered, showWithQty, sortCol, sortDir]);
+  }, [items, query, roomFilter, locFilter, showWithQty, sortCol, sortDir]);
 
   /* Stats */
   const stats = useMemo(() => ({
     total: items.length,
     withQty: items.filter(i => i.order_qty && i.order_qty !== "0").length,
-    ordered: items.filter(i => i.ordered).length,
     visible: filtered.length,
-    progress: items.length > 0 ? Math.round((items.filter(i => i.ordered).length / items.length) * 100) : 0,
+    progress: items.length > 0 ? Math.round((items.filter(i => i.order_qty && i.order_qty !== "0").length / items.length) * 100) : 0,
   }), [items, filtered]);
 
   /* Build render tree */
@@ -705,7 +667,7 @@ function App() {
     return (
       <React.Fragment key={loc}>
         <tr className="loc-header" onClick={() => toggleCollapse(locKey)}>
-          <td colSpan="8">
+          <td colSpan="7">
             <span className="loc-icon">📍</span>
             {loc}
             <span className="loc-count">{gitems.length}</span>
@@ -714,7 +676,7 @@ function App() {
         </tr>
         {!isLocCollapsed && gitems.map(item => (
           <TableRow key={item.id} item={item} locked={locked} quickFill={quickFill}
-            onToggle={onToggle} onQty={onQty} onNotes={onNotes} onName={onName} onNr={onNr} />
+            onQty={onQty} onNotes={onNotes} onName={onName} onNr={onNr} />
         ))}
       </React.Fragment>
     );
@@ -732,8 +694,6 @@ function App() {
         <div className="stats-chip">
           <div className="sc-dot a" />
           <span><span className="v">{stats.withQty}</span> zu bestellen</span>
-          <div className="sc-dot g" />
-          <span><span className="v">{stats.ordered}</span> erledigt</span>
         </div>
         <div className="hs" />
 
@@ -817,8 +777,7 @@ function App() {
           <option value="">Alle Lagerorte</option>
           {locations.map(l => <option key={l} value={l}>{l}</option>)}
         </select>
-        <button className={`flt-btn ${showWithQty ? "on" : ""}`} onClick={() => setShowWithQty(v => !v)}>🛒 Warenkorb</button>
-        <button className={`flt-btn ${showOrdered ? "on" : ""}`} onClick={() => setShowOrdered(v => !v)}>✅ Erledigt</button>
+        <button className={`flt-btn ${showWithQty ? "on" : ""}`} onClick={() => { setShowWithQty(v => { if (!v) setRoomFilter(""); return !v; }); }}>🛒 Warenkorb</button>
         <span className="result-cnt">{stats.visible} / {stats.total}</span>
       </div>
 
@@ -828,7 +787,6 @@ function App() {
           <table>
             <thead>
               <tr>
-                <th className="c-check">✓</th>
                 <th className={`c-name ${sortCol === "name" ? "sorted" : ""}`} onClick={() => handleSort("name")}>
                   Artikelbezeichnung <SortIc col="name" />
                 </th>
@@ -843,13 +801,12 @@ function App() {
                   Bestellen <SortIc col="order_qty" />
                 </th>
                 <th className="c-notes" style={{ cursor: "default" }}>Notiz</th>
-                <th className="c-act">St.</th>
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan="8">
+                  <td colSpan="7">
                     <div className="empty">
                       <IC.Search />
                       <p>Keine Artikel gefunden</p>
@@ -866,7 +823,7 @@ function App() {
                   return (
                     <React.Fragment key={room}>
                       <tr className="room-header" onClick={() => toggleCollapse(roomKey)}>
-                        <td colSpan="8">
+                        <td colSpan="7">
                           <span className="room-icon">{roomIcon(room)}</span>
                           {room}
                           <span className="room-count">{roomTotal} Artikel</span>
@@ -890,7 +847,6 @@ function App() {
       <div id="sb">
         <div className="sb-i"><div className="sd t" />{stats.total} Artikel</div>
         <div className="sb-i"><div className="sd a" />{stats.withQty} zu bestellen</div>
-        <div className="sb-i"><div className="sd g" />{stats.ordered} erledigt</div>
         {locked && <div className="sb-i" style={{ color: "var(--amber)" }}>🔒 Gesperrt</div>}
         {quickFill && <div className="sb-i" style={{ color: "var(--teal)" }}>⚡ Schnelleingabe</div>}
         {/* Progress bar */}
