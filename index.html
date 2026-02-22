@@ -91,7 +91,42 @@ html, body { height: 100%; background: var(--bg-primary); color: var(--text-prim
 .icon-btn:hover { border-color: var(--teal); background: var(--teal-glow); color: var(--teal); }
 .icon-btn.active { border-color: var(--teal); background: var(--teal-glow-strong); color: var(--teal); }
 .icon-btn svg { width: 15px; height: 15px; }
-.icon-btn .tip { position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); background: var(--text-primary); color: var(--bg-primary); font-size: 10px; white-space: nowrap; padding: 3px 7px; border-radius: 5px; pointer-events: none; opacity: 0; transition: opacity 0.15s; font-family: "DM Sans", sans-serif; }
+.icon-btn .tip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1a202c;
+  color: #f0f4f8;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  padding: 5px 10px;
+  border-radius: 7px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.18s, transform 0.18s;
+  font-family: "DM Sans", sans-serif;
+  letter-spacing: 0.01em;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  z-index: 500;
+}
+body.dark .icon-btn .tip {
+  background: #e6edf3;
+  color: #0d1117;
+}
+.icon-btn .tip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: #1a202c;
+}
+body.dark .icon-btn .tip::after {
+  border-top-color: #e6edf3;
+}
 .icon-btn:hover .tip { opacity: 1; }
 
 .zoom-wrap { display: flex; align-items: center; gap: 6px; }
@@ -782,7 +817,7 @@ function App() {
           <option value="">Alle Lagerorte</option>
           {locations.map(l => <option key={l} value={l}>{l}</option>)}
         </select>
-        <button className={`flt-btn ${showWithQty ? "on" : ""}`} onClick={() => setShowWithQty(v => !v)}>📦 Mit Menge</button>
+        <button className={`flt-btn ${showWithQty ? "on" : ""}`} onClick={() => setShowWithQty(v => !v)}>🛒 Warenkorb</button>
         <button className={`flt-btn ${showOrdered ? "on" : ""}`} onClick={() => setShowOrdered(v => !v)}>✅ Erledigt</button>
         <span className="result-cnt">{stats.visible} / {stats.total}</span>
       </div>
